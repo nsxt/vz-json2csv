@@ -61,12 +61,12 @@ int main(int argc, char *argv[]) {
 	
 	fs::path p(argPath);	
 	auto dirEntryList = [=] { return boost::make_iterator_range(fs::directory_iterator(p), {}); };
-	auto unaryFun = [](fs::directory_entry const& e) { return e.path().string(); };
+	auto unaryFunc = [](fs::directory_entry const& e) { return e.path().string(); };
 	std::vector<std::string> fileList;
 	
 	std::cout << "D4Games Log Converter Start (Json to CSV)" << std::endl;
 	std::cout << "Please wait for Check to " << p << " folder contents..." << std::endl;
-	boost::transform(dirEntryList(), std::back_inserter(fileList), unaryFun);
+	boost::transform(dirEntryList(), std::back_inserter(fileList), unaryFunc);
 	std::cout << "Folder : " << p << "\t" << "Total Files : " << fileList.size() << std::endl << std::flush;	
 
 	if (fileList.empty()) {
