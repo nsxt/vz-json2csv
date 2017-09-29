@@ -58,8 +58,8 @@ int main(int argc, char *argv[]) {
 		std::cout << "Current path - " << current_path() << std::endl;
 		return 0;
 	}
-	
-	fs::path p(argPath);	
+
+	fs::path p(argPath);
 	auto dirEntryList = [=] { return boost::make_iterator_range(fs::directory_iterator(p), {}); };
 	auto unaryFunc = [](fs::directory_entry const& e) { return e.path().string(); };
 	std::vector<std::string> fileList;
@@ -84,6 +84,15 @@ int main(int argc, char *argv[]) {
 	long curCount = 0;
 	long mod = maxCount / 100;
 	mod = mod > 0 ? mod : 1;
+
+	try {
+		csv.reserve(maxCount * (120 * 2) + 240);
+		std::cout << "\nMemory allocated : " << csv.capacity() << '\n' << std::endl;
+	}
+	catch (const std::bad_alloc& e) {
+		std::cout << "Error : Memory allocate fail. - " << e.what() << std::endl;
+		return 0;
+	}	
 
 	for (const auto& fileName : fileList) {
 		if (curCount % mod == 0) {
@@ -123,9 +132,15 @@ int main(int argc, char *argv[]) {
 			else
 				row << item.value();
 			
-			csv.emplace_back(row.str());
-			csv.emplace_back(std::string("\t"));
-			row.str("");
+			try {
+				csv.emplace_back(row.str());
+				csv.emplace_back(std::string("\t"));
+			}
+			catch (const std::bad_alloc& e) {
+				std::cout << "Error : Memory allocate fail. - " << e.what() << std::endl;
+				return 0;
+			}
+			row.str("");			
 		}
 
 		std::string& endToken = (*(csv.rbegin()));
