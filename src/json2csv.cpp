@@ -46,6 +46,7 @@ string get_path(string pathName) {
 
 int main(int argc, char *argv[]) {	
 	if (argc < 2) {
+		std::cout << "D4Games Json to CSV Converter Ver.0.6.171013" << std::endl;
 		std::cout << "Usage : <Folder Name> \n" << "ex) json-log SampleFolder" << std::endl;
 		return 0;
 	}
@@ -64,6 +65,7 @@ int main(int argc, char *argv[]) {
 	auto unaryFunc = [](fs::directory_entry const& e) { return e.path().string(); };
 	std::vector<std::string> fileList;
 	
+	std::cout << "D4Games Json to CSV Converter Ver.0.6.171013" << std::endl;
 	std::cout << "D4Games Log Converter Start (Json to CSV)" << std::endl;
 	std::cout << "Please wait for Check to " << p << " folder contents..." << std::endl;
 	boost::transform(dirEntryList(), std::back_inserter(fileList), unaryFunc);
@@ -86,13 +88,18 @@ int main(int argc, char *argv[]) {
 	mod = mod > 0 ? mod : 1;
 
 	try {
-		csv.reserve(maxCount * (120 * 2) + 240);
+		csv.reserve(240);
 		std::cout << "\nMemory allocated : " << csv.capacity() << '\n' << std::endl;
 	}
 	catch (const std::bad_alloc& e) {
 		std::cout << "Error : Memory allocate fail. - " << e.what() << std::endl;
 		return 0;
 	}	
+
+
+	auto csvFileName = pathName + "-log.csv";
+	csvFileName.insert(0, "./");
+	std::ofstream saveFile(csvFileName, std::ofstream::out | std::ofstream::trunc);
 
 	for (const auto& fileName : fileList) {
 		if (curCount % mod == 0) {
@@ -111,7 +118,7 @@ int main(int argc, char *argv[]) {
 			ifStream.close();
 		}
 		catch (std::ifstream::failure e) {
-			std::cout << "Error : File Stream Fail - " << e.what() << std::endl;			
+			std::cout << "Error : File Stream Fail - " << e.what() << std::endl;
 			break;
 		}
 		
@@ -140,7 +147,7 @@ int main(int argc, char *argv[]) {
 				std::cout << "Error : Memory allocate fail. - " << e.what() << std::endl;
 				return 0;
 			}
-			row.str("");			
+			row.str("");
 		}
 
 		std::string& endToken = (*(csv.rbegin()));
@@ -149,14 +156,11 @@ int main(int argc, char *argv[]) {
 
 		if (header)
 			header = false;
+
+		std::copy(csv.begin(), csv.end(), std::ostream_iterator<std::string>(saveFile));
+		csv.clear();
 	}
-
 	
-	auto csvFileName = pathName + "-log.csv";
-	csvFileName.insert(0, "./");
-
-	std::ofstream saveFile(csvFileName, std::ofstream::out | std::ofstream::trunc);
-	std::copy(csv.begin(), csv.end(), std::ostream_iterator<std::string>(saveFile));
 	std::cout << "Complete save file - " << current_path() << "/" << pathName + "-log.csv" << std::endl;
 
 	return 0;
